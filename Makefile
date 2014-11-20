@@ -12,4 +12,7 @@ build: fmt
 install: build
 	go install
 
-.PHONY: fmt run build install
+godep:
+	godep save -r
+
+.PHONY: fmt run build install godep

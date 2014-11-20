@@ -1,21 +1,24 @@
 package main
 
 import (
+	// "encoding/json"
 	"fmt"
+	linuxproc "github.com/chilts/cigar/Godeps/_workspace/src/github.com/c9s/goprocinfo/linux"
 	"io/ioutil"
+	"log"
 	"strconv"
 	"strings"
 )
 
-// type MemInfo struct {
-//     memTotal uint64
-//     memFree uint64
-//     buffers uint64
-//     cached uint64
-//     swapCached uint64
-// }
+type MemInfo struct {
+	memTotal   uint64
+	memFree    uint64
+	buffers    uint64
+	cached     uint64
+	swapCached uint64
+}
 
-func getMemorySample() (memTotal, memFree, buffers, cached, swapCached uint64, err error) {
+func (memInfo *MemInfo) populate() {
 	contents, err := ioutil.ReadFile("/proc/meminfo")
 	if err != nil {
 		return
@@ -26,51 +29,68 @@ func getMemorySample() (memTotal, memFree, buffers, cached, swapCached uint64, e
 		if len(fields) == 0 {
 			return
 		}
-		fmt.Printf("Fields are : %q\n", fields)
+		// fmt.Printf("Fields are : %q\n", fields)
 		var val uint64
 		if fields[0] == "MemTotal:" {
 			val, err = strconv.ParseUint(fields[1], 10, 64)
 			if err != nil {
 				return
 			}
-			memTotal = val * 1024
+			memInfo.memTotal = val * 1024
 		}
 		if fields[0] == "MemFree:" {
 			val, err = strconv.ParseUint(fields[1], 10, 64)
 			if err != nil {
 				return
 			}
-			memFree = val * 1024
+			memInfo.memFree = val * 1024
 		}
 		if fields[0] == "Buffers:" {
 			val, err = strconv.ParseUint(fields[1], 10, 64)
 			if err != nil {
 				return
 			}
-			buffers = val * 1024
+			memInfo.buffers = val * 1024
 		}
 		if fields[0] == "Cached:" {
 			val, err = strconv.ParseUint(fields[1], 10, 64)
 			if err != nil {
 				return
 			}
-			cached = val * 1024
+			memInfo.cached = val * 1024
 		}
 		if fields[0] == "SwapCached:" {
 			val, err = strconv.ParseUint(fields[1], 10, 64)
 			if err != nil {
 				return
 			}
-			swapCached = val * 1024
+			memInfo.swapCached = val * 1024
 		}
 	}
 	return
 }
 
-func main() {
-	memTotal, memFree, _, _, _, err := getMemorySample()
+func doMemInfo() {
+	meminfo, err := linuxproc.ReadMemInfo("/proc/meminfo")
 	if err != nil {
-		//     t.Fatal("/proc/meminfo read fail")
+		log.Fatal(err)
 	}
-	fmt.Printf("Memory usage is %d   [memTotal: %d, memFree: %d]\n", memTotal-memFree, memTotal, memFree)
+
+	var memTotal = meminfo["MemTotal"] * 1024
+	var memFree = meminfo["MemFree"] * 1024
+	var memUsed = memTotal - memFree
+	fmt.Printf("Memory usage is %d   [memTotal: %d, memFree: %d]\n", memUsed, memTotal, memFree)
+
+	// let's do some JSON
+	// str, err := json.Marshal(meminfo)
+	// fmt.Printf("json=%s\n", str)
+}
+
+func main() {
+	doMemInfo()
+
+	var memInfo MemInfo
+	memInfo.populate()
+	// fmt.Printf("%q\n", memInfo)
+	fmt.Printf("Memory usage is %d   [memTotal: %d, memFree: %d]\n", memInfo.memTotal-memInfo.memFree, memInfo.memTotal, memInfo.memFree)
 }

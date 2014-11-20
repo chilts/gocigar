@@ -1,5 +1,10 @@
 {
-	"ImportPath": "github.com/chilts/gocigar",
+	"ImportPath": "github.com/chilts/cigar",
 	"GoVersion": "go1.3.3",
-	"Deps": []
+	"Deps": [
+		{
+			"ImportPath": "github.com/c9s/goprocinfo/linux",
+			"Rev": "65e9a98d9acd0433c239285ab7f71b6bcc9348ea"
+		}
+	]
 }
