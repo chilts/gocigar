@@ -1,10 +1,14 @@
 {
-	"ImportPath": "github.com/chilts/cigar",
+	"ImportPath": "github.com/chilts/gocigar",
 	"GoVersion": "go1.3.3",
 	"Deps": [
 		{
 			"ImportPath": "github.com/c9s/goprocinfo/linux",
 			"Rev": "65e9a98d9acd0433c239285ab7f71b6bcc9348ea"
+		},
+		{
+			"ImportPath": "github.com/vaughan0/go-ini",
+			"Rev": "a98ad7ee00ec53921f08832bc06ecf7fd600e6a1"
 		}
 	]
 }

@@ -4,6 +4,7 @@ import (
 	// "encoding/json"
 	"fmt"
 	linuxproc "github.com/chilts/gocigar/Godeps/_workspace/src/github.com/c9s/goprocinfo/linux"
+	ini "github.com/chilts/gocigar/Godeps/_workspace/src/github.com/vaughan0/go-ini"
 	"io/ioutil"
 	"log"
 	"os"
@@ -106,6 +107,24 @@ func getLoadAvg() (*linuxproc.LoadAvg, error) {
 }
 
 func main() {
+	file, err := ini.LoadFile("cigar.ini")
+	if err != nil {
+		fmt.Printf("Error loading config file : %v\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Println("----------------------------------------------------------------------------")
+	for key, value := range file[""] {
+		fmt.Printf("%s => %s\n", key, value)
+	}
+	for name, section := range file {
+		fmt.Printf("Section name: %s\n", name)
+		for key, value := range section {
+			fmt.Printf("  %s => %s\n", key, value)
+		}
+	}
+	fmt.Println("----------------------------------------------------------------------------")
+
 	doMemInfo()
 
 	var memInfo MemInfo
