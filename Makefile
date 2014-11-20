@@ -7,7 +7,7 @@ run: fmt
 	go run cigar.go
 
 build: fmt
-	go build
+	go build -o cigar cigar.go
 
 install: build
 	go install

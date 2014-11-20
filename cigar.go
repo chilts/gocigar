@@ -3,7 +3,7 @@ package main
 import (
 	// "encoding/json"
 	"fmt"
-	linuxproc "github.com/chilts/cigar/Godeps/_workspace/src/github.com/c9s/goprocinfo/linux"
+	linuxproc "github.com/chilts/gocigar/Godeps/_workspace/src/github.com/c9s/goprocinfo/linux"
 	"io/ioutil"
 	"log"
 	"strconv"
