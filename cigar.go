@@ -6,8 +6,10 @@ import (
 	linuxproc "github.com/chilts/gocigar/Godeps/_workspace/src/github.com/c9s/goprocinfo/linux"
 	"io/ioutil"
 	"log"
+	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type MemInfo struct {
@@ -86,6 +88,23 @@ func doMemInfo() {
 	// fmt.Printf("json=%s\n", str)
 }
 
+func doDiskSpace() {
+	disk, err := linuxproc.ReadDisk("/")
+	if err != nil {
+		fmt.Printf("Can't update document %v\n", err)
+		os.Exit(1)
+	}
+	fmt.Printf("%d %d %d\n", disk.All, disk.Used, disk.Free)
+}
+
+func getLoadAvg() (*linuxproc.LoadAvg, error) {
+	loadAvg, err := linuxproc.ReadLoadAvg("/proc/loadavg")
+	if err != nil {
+		return nil, err
+	}
+	return loadAvg, nil
+}
+
 func main() {
 	doMemInfo()
 
@@ -93,4 +112,37 @@ func main() {
 	memInfo.populate()
 	// fmt.Printf("%q\n", memInfo)
 	fmt.Printf("Memory usage is %d   [memTotal: %d, memFree: %d]\n", memInfo.memTotal-memInfo.memFree, memInfo.memTotal, memInfo.memFree)
+
+	doDiskSpace()
+	loadAvg, err := getLoadAvg()
+	if err != nil {
+		fmt.Printf("Can't get LoadAvg : %v\n", err)
+		os.Exit(1)
+	}
+	fmt.Printf("%q\n", loadAvg)
+	fmt.Printf("LoadAvg: OneMin=%f, FiveMin=%f, FifteenMin=%f\n", loadAvg.Last1Min, loadAvg.Last5Min, loadAvg.Last15Min)
+	fmt.Println("\n")
+
+	ticker := time.NewTicker(5 * time.Second)
+	go func() {
+		for t := range ticker.C {
+			iso8601 := time.Now().UTC().Format(time.RFC3339)
+			fmt.Println("UTC: ", iso8601)
+			fmt.Println("UTC: ", time.Now().UTC().Format(time.RFC3339Nano))
+			fmt.Println("Tick at", t.UTC().Format(time.RFC3339))
+			loadAvg, err := getLoadAvg()
+			if err != nil {
+				fmt.Printf("Can't get LoadAvg : %v\n", err)
+				os.Exit(1)
+			}
+			fmt.Printf("LoadAvg: OneMin=%f, FiveMin=%f, FifteenMin=%f\n", loadAvg.Last1Min, loadAvg.Last5Min, loadAvg.Last15Min)
+			fmt.Println()
+		}
+	}()
+
+	// sleep for 22 seconds to allow 4 ticks
+	time.Sleep(22 * time.Second)
+	ticker.Stop()
+
+	fmt.Print("Got to the end\n")
 }
